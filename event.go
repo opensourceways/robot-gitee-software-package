@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -216,9 +217,11 @@ func (p CreatePRParam) execScript(cfg *configuration, cmdType CmdType) error {
 	cmd := exec.Command(repoHandleScript, string(cmdType), cfg.Robot.Username,
 		cfg.Robot.Password, p.branchName())
 
-	_, err := cmd.CombinedOutput()
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(string(output))
+	}
 
-	return err
+	return nil
 }
 
 func (p CreatePRParam) branchName() string {
