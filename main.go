@@ -1,16 +1,19 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"os"
 
+	"github.com/opensourceways/kafka-lib/kafka"
+	"github.com/opensourceways/kafka-lib/mq"
+	"github.com/opensourceways/robot-gitee-lib/client"
+	"github.com/opensourceways/robot-gitee-lib/framework"
+	"github.com/opensourceways/server-common-lib/config"
 	"github.com/opensourceways/server-common-lib/logrusutil"
 	liboptions "github.com/opensourceways/server-common-lib/options"
 	"github.com/opensourceways/server-common-lib/secret"
 	"github.com/sirupsen/logrus"
-
-	"github.com/opensourceways/robot-gitee-lib/client"
-	"github.com/opensourceways/robot-gitee-lib/framework"
 )
 
 type options struct {
@@ -44,6 +47,15 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	configAgent := config.NewConfigAgent(func() config.Config {
+		return new(configuration)
+	})
+	if err := configAgent.Start(o.service.ConfigFile); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	defer configAgent.Stop()
+
 	secretAgent := new(secret.Agent)
 	if err := secretAgent.Start([]string{o.gitee.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secret agent.")
@@ -51,9 +63,47 @@ func main() {
 
 	defer secretAgent.Stop()
 
+	cfg, err := getConfig(&configAgent)
+	if err != nil {
+		logrus.WithError(err).Fatal("get config failed")
+	}
+
+	if err = connectKafka(cfg.KafkaAddress); err != nil {
+		logrus.WithError(err).Fatal("init kafka failed")
+	}
+
 	c := client.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
+
+	e := newEvent(cfg, c)
+	s, err := e.process()
+	if err != nil {
+		logrus.WithError(err).Fatal("subscribe failed")
+	}
+	defer s.Unsubscribe()
 
 	r := newRobot(c)
 
 	framework.Run(r, o.service)
+}
+
+func getConfig(agent *config.ConfigAgent) (*configuration, error) {
+	_, cfg := agent.GetConfig()
+	c, ok := cfg.(*configuration)
+	if !ok {
+		return nil, errors.New("can't convert to configuration")
+	}
+
+	return c, nil
+}
+
+func connectKafka(address string) error {
+	err := kafka.Init(
+		mq.Addresses(address),
+		mq.Log(logrus.WithField("module", "kfk")),
+	)
+	if err != nil {
+		return err
+	}
+
+	return kafka.Connect()
 }

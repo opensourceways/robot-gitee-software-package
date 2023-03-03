@@ -1,62 +1,49 @@
 package main
 
-import "github.com/opensourceways/server-common-lib/config"
+import (
+	"errors"
+)
 
 type configuration struct {
-	ConfigItems []botConfig `json:"config_items,omitempty"`
-}
-
-func (c *configuration) configFor(org, repo string) *botConfig {
-	if c == nil {
-		return nil
-	}
-
-	items := c.ConfigItems
-	v := make([]config.IRepoFilter, len(items))
-	for i := range items {
-		v[i] = &items[i]
-	}
-
-	if i := config.Find(org, repo, v); i >= 0 {
-		return &items[i]
-	}
-
-	return nil
+	Topic        string       `json:"topic"           required:"true"`
+	KafkaAddress string       `json:"kafka_address"   required:"true"`
+	Branch       BranchConfig `json:"branch"`
+	Robot        RobotConfig  `json:"robot"`
 }
 
 func (c *configuration) Validate() error {
-	if c == nil {
-		return nil
+	if c.Topic == "" {
+		return errors.New("missing topic")
 	}
 
-	items := c.ConfigItems
-	for i := range items {
-		if err := items[i].validate(); err != nil {
-			return err
-		}
+	if c.KafkaAddress == "" {
+		return errors.New("missing kafka_address")
 	}
 
 	return nil
 }
 
 func (c *configuration) SetDefault() {
-	if c == nil {
-		return
+	if c.Branch.Name == "" {
+		c.Branch.Name = "master"
 	}
 
-	Items := c.ConfigItems
-	for i := range Items {
-		Items[i].setDefault()
+	if c.Branch.ProtectType == "" {
+		c.Branch.ProtectType = "protected"
+	}
+
+	if c.Branch.PublicType == "" {
+		c.Branch.PublicType = "public"
 	}
 }
 
-type botConfig struct {
-	config.RepoFilter
+type BranchConfig struct {
+	Name        string `json:"name"`
+	ProtectType string `json:"protect_type"`
+	PublicType  string `json:"public_type"`
 }
 
-func (c *botConfig) setDefault() {
-}
-
-func (c *botConfig) validate() error {
-	return c.RepoFilter.Validate()
+type RobotConfig struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

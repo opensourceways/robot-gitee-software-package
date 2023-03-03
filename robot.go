@@ -10,10 +10,11 @@ import (
 	"github.com/opensourceways/robot-gitee-lib/framework"
 )
 
-// TODO: set botName
-const botName = ""
+const botName = "software-package"
 
 type iClient interface {
+	GetBot() (sdk.User, error)
+	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (sdk.PullRequest, error)
 }
 
 func newRobot(cli iClient) *robot {
