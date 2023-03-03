@@ -198,7 +198,7 @@ var (
 )
 
 func (p CreatePRParam) initRepo(cfg *configuration) error {
-	if _, err := os.Stat(repoName); err == nil {
+	if s, err := os.Stat(repoName); err == nil && s.IsDir() {
 		return nil
 	}
 
@@ -215,7 +215,7 @@ func (p CreatePRParam) commit(cfg *configuration) error {
 
 func (p CreatePRParam) execScript(cfg *configuration, cmdType CmdType) error {
 	cmd := exec.Command(repoHandleScript, string(cmdType), cfg.Robot.Username,
-		cfg.Robot.Password, p.branchName())
+		cfg.Robot.Password, cfg.Robot.Email, p.branchName())
 
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return errors.New(string(output))

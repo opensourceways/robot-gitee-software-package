@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
 set -euo pipefail
-
 
 init() {
     if [ -d $repo ]; then
@@ -12,10 +11,9 @@ init() {
     cd $repo
 
     git config user.name $git_user
-    git config user.password $git_password
+    git config user.email $git_email
 
     git remote add upstream ${upstream}
-
 }
 
 new_branch() {
@@ -29,7 +27,6 @@ new_branch() {
     git push origin master
 
     git checkout -b $branch_name
-
 }
 
 commit() {
@@ -44,18 +41,15 @@ commit() {
     git checkout master
 }
 
-
-
-
 cmd=$1
 git_user=$2
 git_password=$3
-branch_name=$4
+git_email=$4
+branch_name=$5
 
 repo=community
 upstream=https://gitee.com/openeuler/${repo}.git
-repo_url=https://gitee.com/${git_user}/${repo}.git
-
+repo_url=https://${git_user}:${git_password}@gitee.com/${git_user}/${repo}.git
 
 case $cmd in
     "init")
