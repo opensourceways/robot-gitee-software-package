@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/opensourceways/software-package-server/softwarepkg/domain"
 )
 
 const repoHandleScript = "./repo.sh"
@@ -29,19 +31,7 @@ type: %s
 type: %s
 `
 
-type CreatePRParam struct {
-	User        User   `json:"user"`
-	PackageName string `json:"package_name"`
-	Description string `json:"description"`
-	Purpose     string `json:"purpose"`
-	Upstream    string `json:"upstream"`
-	SIG         string `json:"sig"`
-}
-
-type User struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
+type CreatePRParam domain.SoftwarePkgAppliedEvent
 
 func (c CreatePRParam) modifyFiles(cfg *configuration) error {
 	if err := c.appendToSigInfo(); err != nil {
@@ -52,8 +42,8 @@ func (c CreatePRParam) modifyFiles(cfg *configuration) error {
 }
 
 func (c CreatePRParam) appendToSigInfo() error {
-	appendContent := fmt.Sprintf(appendToSigInfo, c.PackageName, c.User.Email, c.User.Name)
-	fileName := fmt.Sprintf("community/sig/%s/sig-info.yaml", c.SIG)
+	appendContent := fmt.Sprintf(appendToSigInfo, c.PkgName, c.ImporterEmail, c.Importer)
+	fileName := fmt.Sprintf("community/sig/%s/sig-info.yaml", c.ImportingPkgSig)
 
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -74,13 +64,13 @@ func (c CreatePRParam) appendToSigInfo() error {
 }
 
 func (c CreatePRParam) newCreateRepoYaml(cfg *configuration) error {
-	subDirName := strings.ToLower(c.PackageName[:1])
+	subDirName := strings.ToLower(c.PkgName[:1])
 	fileName := fmt.Sprintf("community/sig/%s/src-openeuler/%s/%s.yaml",
-		c.SIG, subDirName, c.PackageName,
+		c.ImportingPkgSig, subDirName, c.PkgName,
 	)
 
 	content := fmt.Sprintf(createRepoConfigFile,
-		c.PackageName, c.Description, c.Upstream,
+		c.PkgName, c.PkgDesc, c.SourceCodeURL,
 		cfg.PkgRepoBranch.Name,
 		cfg.PkgRepoBranch.ProtectType,
 		cfg.PkgRepoBranch.PublicType,
@@ -115,7 +105,7 @@ func (c CreatePRParam) commit(cfg *configuration) error {
 
 func (c CreatePRParam) execScript(cfg *configuration, cmdType CmdType) error {
 	cmd := exec.Command(repoHandleScript, string(cmdType), cfg.Robot.Username,
-		cfg.Robot.Password, cfg.Robot.Email, branchName(c.PackageName))
+		cfg.Robot.Password, cfg.Robot.Email, branchName(c.PkgName))
 
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return errors.New(string(output))

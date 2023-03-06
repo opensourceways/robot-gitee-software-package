@@ -7,6 +7,7 @@ require (
 	github.com/opensourceways/kafka-lib v0.0.0-20230208095708-dcdb61015d05
 	github.com/opensourceways/robot-gitee-lib v0.0.0-20230301074041-fc39b0bb6e72
 	github.com/opensourceways/server-common-lib v0.0.0-20230208064916-61fc43dfb8db
+	github.com/opensourceways/software-package-server v0.0.0-20230306081611-92d5da321c9b
 	github.com/sirupsen/logrus v1.9.0
 )
 
@@ -29,12 +30,13 @@ require (
 	github.com/jcmturner/gokrb5/v8 v8.4.3 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/klauspost/compress v1.15.14 // indirect
+	github.com/opensourceways/community-robot-lib v0.0.0-20230111083119-2d2c0df320bb // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

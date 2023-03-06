@@ -97,10 +97,10 @@ func (e *event) createPRWithApi(p CreatePRParam) error {
 		return err
 	}
 
-	head := fmt.Sprintf("%s:%s", robotName, branchName(p.PackageName))
+	head := fmt.Sprintf("%s:%s", robotName, branchName(p.PkgName))
 	pr, err := e.cli.CreatePullRequest(
-		org, repoName, prName(p.PackageName),
-		p.Purpose, head, "master", true,
+		org, repoName, prName(p.PkgName),
+		p.ReasonToImportPkg, head, "master", true,
 	)
 	if err != nil {
 		return err
