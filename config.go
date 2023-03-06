@@ -5,19 +5,23 @@ import (
 )
 
 type configuration struct {
-	Topic         string              `json:"topic"           required:"true"`
-	KafkaAddress  string              `json:"kafka_address"   required:"true"`
-	Robot         RobotConfig         `json:"robot"			  required:"true"`
-	PkgRepoBranch PkgRepoBranchConfig `json:"pkg_repo_branch"`
+	KafkaAddress  string        `json:"kafka_address"   required:"true"`
+	Topics        Topics        `json:"topics"`
+	Robot         RobotConfig   `json:"robot"`
+	PkgRepoBranch PkgRepoBranch `json:"pkg_repo_branch"`
 }
 
 func (c *configuration) Validate() error {
-	if c.Topic == "" {
-		return errors.New("missing topic")
-	}
-
 	if c.KafkaAddress == "" {
 		return errors.New("missing kafka_address")
+	}
+
+	if c.Topics.NewPkg == "" {
+		return errors.New("missing new pkg topic")
+	}
+
+	if c.Topics.CIPassed == "" {
+		return errors.New("missing ci passed topic")
 	}
 
 	return nil
@@ -37,7 +41,12 @@ func (c *configuration) SetDefault() {
 	}
 }
 
-type PkgRepoBranchConfig struct {
+type Topics struct {
+	NewPkg   string `json:"new_pkg"`
+	CIPassed string `json:"ci_passed"`
+}
+
+type PkgRepoBranch struct {
 	Name        string `json:"name"`
 	ProtectType string `json:"protect_type"`
 	PublicType  string `json:"public_type"`

@@ -14,8 +14,6 @@ const (
 
 	repoName = "community"
 
-	eventCreatePR = "create_PR"
-
 	branchNameFormat = "software_pkg_%s"
 
 	prNameFormat = branchNameFormat + "新增软件包申请"
@@ -36,41 +34,26 @@ func newEvent(cfg *configuration, cli iClient) *event {
 	}
 }
 
-func (e *event) process() (mq.Subscriber, error) {
-	if err := e.init(); err != nil {
-		return nil, err
-	}
+func (e *event) subscribe() (subscribers map[string]mq.Subscriber, err error) {
+	subscribers = make(map[string]mq.Subscriber)
 
-	return kafka.Subscribe(e.cfg.Topic, botName, e.handle)
-}
-
-func (e *event) init() error {
-	v, err := e.cli.GetBot()
+	s, err := kafka.Subscribe(e.cfg.Topics.NewPkg, botName, e.newPkgHandle)
 	if err != nil {
-		return err
+		return
 	}
+	subscribers[s.Topic()] = s
 
-	robotLogin = v.Login
-
-	return nil
+	return
 }
 
-func (e *event) handle(event mq.Event) error {
-	eventType := event.Message().Header["event_type"]
-
+func (e *event) newPkgHandle(event mq.Event) error {
 	e.log = logrus.WithFields(
 		logrus.Fields{
-			"event_type":  eventType,
-			"msg_content": event.Message(),
+			"msg": event.Message(),
 		},
 	)
 
-	switch eventType {
-	case eventCreatePR:
-		e.createPR(event.Message())
-	default:
-
-	}
+	e.createPR(event.Message())
 
 	return nil
 }
@@ -109,8 +92,16 @@ func (e *event) createPR(msg *mq.Message) {
 }
 
 func (e *event) createPRWithApi(p CreatePRParam) error {
-	head := fmt.Sprintf("%s:%s", robotLogin, branchName(p.PackageName))
-	pr, err := e.cli.CreatePullRequest(org, repoName, prName(p.PackageName), p.Purpose, head, "master", true)
+	robotName, err := e.getRobotLogin()
+	if err != nil {
+		return err
+	}
+
+	head := fmt.Sprintf("%s:%s", robotName, branchName(p.PackageName))
+	pr, err := e.cli.CreatePullRequest(
+		org, repoName, prName(p.PackageName),
+		p.Purpose, head, "master", true,
+	)
 	if err != nil {
 		return err
 	}
@@ -118,6 +109,19 @@ func (e *event) createPRWithApi(p CreatePRParam) error {
 	logrus.Infof("pr number is %d", pr.Number)
 
 	return nil
+}
+
+func (e *event) getRobotLogin() (string, error) {
+	if robotLogin == "" {
+		v, err := e.cli.GetBot()
+		if err != nil {
+			return "", err
+		}
+
+		robotLogin = v.Login
+	}
+
+	return robotLogin, nil
 }
 
 func branchName(pkgName string) string {

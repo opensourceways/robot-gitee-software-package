@@ -75,11 +75,17 @@ func main() {
 	c := client.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
 	e := newEvent(cfg, c)
-	s, err := e.process()
+	subscribers, err := e.subscribe()
 	if err != nil {
 		logrus.WithError(err).Fatal("subscribe failed")
 	}
-	defer s.Unsubscribe()
+	defer func() {
+		for k, v := range subscribers {
+			if err := v.Unsubscribe(); err != nil {
+				logrus.Errorf("failed to unsubscribe for topic:%s, err:%v", k, err)
+			}
+		}
+	}()
 
 	r := newRobot(c)
 
