@@ -16,7 +16,7 @@ const (
 
 	branchNameFormat = "software_pkg_%s"
 
-	prNameFormat = branchNameFormat + "新增软件包申请"
+	prNameFormat = branchNameFormat + ",新增软件包申请"
 )
 
 var robotLogin string
