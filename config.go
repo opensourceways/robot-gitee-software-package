@@ -5,10 +5,10 @@ import (
 )
 
 type configuration struct {
-	Topic        string       `json:"topic"           required:"true"`
-	KafkaAddress string       `json:"kafka_address"   required:"true"`
-	Branch       BranchConfig `json:"branch"`
-	Robot        RobotConfig  `json:"robot"`
+	Topic         string              `json:"topic"           required:"true"`
+	KafkaAddress  string              `json:"kafka_address"   required:"true"`
+	Robot         RobotConfig         `json:"robot"			  required:"true"`
+	PkgRepoBranch PkgRepoBranchConfig `json:"pkg_repo_branch"`
 }
 
 func (c *configuration) Validate() error {
@@ -24,20 +24,20 @@ func (c *configuration) Validate() error {
 }
 
 func (c *configuration) SetDefault() {
-	if c.Branch.Name == "" {
-		c.Branch.Name = "master"
+	if c.PkgRepoBranch.Name == "" {
+		c.PkgRepoBranch.Name = "master"
 	}
 
-	if c.Branch.ProtectType == "" {
-		c.Branch.ProtectType = "protected"
+	if c.PkgRepoBranch.ProtectType == "" {
+		c.PkgRepoBranch.ProtectType = "protected"
 	}
 
-	if c.Branch.PublicType == "" {
-		c.Branch.PublicType = "public"
+	if c.PkgRepoBranch.PublicType == "" {
+		c.PkgRepoBranch.PublicType = "public"
 	}
 }
 
-type BranchConfig struct {
+type PkgRepoBranchConfig struct {
 	Name        string `json:"name"`
 	ProtectType string `json:"protect_type"`
 	PublicType  string `json:"public_type"`
