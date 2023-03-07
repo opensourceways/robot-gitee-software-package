@@ -1,17 +1,17 @@
-package main
+package event
 
 import (
 	"errors"
 )
 
-type configuration struct {
+type Config struct {
 	KafkaAddress  string        `json:"kafka_address"   required:"true"`
 	Topics        Topics        `json:"topics"`
 	Robot         RobotConfig   `json:"robot"`
 	PkgRepoBranch PkgRepoBranch `json:"pkg_repo_branch"`
 }
 
-func (c *configuration) Validate() error {
+func (c *Config) Validate() error {
 	if c.KafkaAddress == "" {
 		return errors.New("missing kafka_address")
 	}
@@ -27,7 +27,7 @@ func (c *configuration) Validate() error {
 	return nil
 }
 
-func (c *configuration) SetDefault() {
+func (c *Config) SetDefault() {
 	if c.PkgRepoBranch.Name == "" {
 		c.PkgRepoBranch.Name = "master"
 	}
@@ -41,11 +41,6 @@ func (c *configuration) SetDefault() {
 	}
 }
 
-type Topics struct {
-	NewPkg   string `json:"new_pkg"`
-	CIPassed string `json:"ci_passed"`
-}
-
 type PkgRepoBranch struct {
 	Name        string `json:"name"`
 	ProtectType string `json:"protect_type"`
@@ -56,4 +51,9 @@ type RobotConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+}
+
+type Topics struct {
+	NewPkg   string `json:"new_pkg"`
+	CIPassed string `json:"ci_passed"`
 }

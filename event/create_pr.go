@@ -1,4 +1,4 @@
-package main
+package event
 
 import (
 	"bufio"
@@ -33,7 +33,7 @@ type: %s
 
 type CreatePRParam domain.SoftwarePkgAppliedEvent
 
-func (c CreatePRParam) modifyFiles(cfg *configuration) error {
+func (c CreatePRParam) modifyFiles(cfg *Config) error {
 	if err := c.appendToSigInfo(); err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (c CreatePRParam) appendToSigInfo() error {
 	return nil
 }
 
-func (c CreatePRParam) newCreateRepoYaml(cfg *configuration) error {
+func (c CreatePRParam) newCreateRepoYaml(cfg *Config) error {
 	subDirName := strings.ToLower(c.PkgName[:1])
 	fileName := fmt.Sprintf("community/sig/%s/src-openeuler/%s/%s.yaml",
 		c.ImportingPkgSig, subDirName, c.PkgName,
@@ -87,7 +87,7 @@ var (
 	cmdCommit    = CmdType("commit")
 )
 
-func (c CreatePRParam) initRepo(cfg *configuration) error {
+func (c CreatePRParam) initRepo(cfg *Config) error {
 	if s, err := os.Stat(repoName); err == nil && s.IsDir() {
 		return nil
 	}
@@ -95,15 +95,15 @@ func (c CreatePRParam) initRepo(cfg *configuration) error {
 	return c.execScript(cfg, cmdInit)
 }
 
-func (c CreatePRParam) newBranch(cfg *configuration) error {
+func (c CreatePRParam) newBranch(cfg *Config) error {
 	return c.execScript(cfg, cmdNewBranch)
 }
 
-func (c CreatePRParam) commit(cfg *configuration) error {
+func (c CreatePRParam) commit(cfg *Config) error {
 	return c.execScript(cfg, cmdCommit)
 }
 
-func (c CreatePRParam) execScript(cfg *configuration, cmdType CmdType) error {
+func (c CreatePRParam) execScript(cfg *Config, cmdType CmdType) error {
 	cmd := exec.Command(repoHandleScript, string(cmdType), cfg.Robot.Username,
 		cfg.Robot.Password, cfg.Robot.Email, branchName(c.PkgName))
 

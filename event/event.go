@@ -1,4 +1,4 @@
-package main
+package event
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"github.com/opensourceways/kafka-lib/kafka"
 	"github.com/opensourceways/kafka-lib/mq"
 	"github.com/sirupsen/logrus"
+
+	"github.com/opensourceways/robot-gitee-software-package/client"
 )
 
 const (
@@ -21,23 +23,25 @@ const (
 
 var robotLogin string
 
-type event struct {
-	cli iClient
-	cfg *configuration
-	log *logrus.Entry
+type Event struct {
+	cli   client.IClient
+	cfg   *Config
+	log   *logrus.Entry
+	group string
 }
 
-func newEvent(cfg *configuration, cli iClient) *event {
-	return &event{
-		cli: cli,
-		cfg: cfg,
+func NewEvent(cfg *Config, cli client.IClient, group string) *Event {
+	return &Event{
+		cli:   cli,
+		cfg:   cfg,
+		group: group,
 	}
 }
 
-func (e *event) subscribe() (subscribers map[string]mq.Subscriber, err error) {
+func (e *Event) Subscribe() (subscribers map[string]mq.Subscriber, err error) {
 	subscribers = make(map[string]mq.Subscriber)
 
-	s, err := kafka.Subscribe(e.cfg.Topics.NewPkg, botName, e.newPkgHandle)
+	s, err := kafka.Subscribe(e.cfg.Topics.NewPkg, e.group, e.newPkgHandle)
 	if err != nil {
 		return
 	}
@@ -46,7 +50,7 @@ func (e *event) subscribe() (subscribers map[string]mq.Subscriber, err error) {
 	return
 }
 
-func (e *event) newPkgHandle(event mq.Event) error {
+func (e *Event) newPkgHandle(event mq.Event) error {
 	e.log = logrus.WithFields(
 		logrus.Fields{
 			"msg": event.Message(),
@@ -58,7 +62,7 @@ func (e *event) newPkgHandle(event mq.Event) error {
 	return nil
 }
 
-func (e *event) createPR(msg *mq.Message) {
+func (e *Event) createPR(msg *mq.Message) {
 	var c CreatePRParam
 	if err := json.Unmarshal(msg.Body, &c); err != nil {
 		e.log.WithError(err).Error("unmarshal")
@@ -91,7 +95,7 @@ func (e *event) createPR(msg *mq.Message) {
 	}
 }
 
-func (e *event) createPRWithApi(p CreatePRParam) error {
+func (e *Event) createPRWithApi(p CreatePRParam) error {
 	robotName, err := e.getRobotLogin()
 	if err != nil {
 		return err
@@ -111,7 +115,7 @@ func (e *event) createPRWithApi(p CreatePRParam) error {
 	return nil
 }
 
-func (e *event) getRobotLogin() (string, error) {
+func (e *Event) getRobotLogin() (string, error) {
 	if robotLogin == "" {
 		v, err := e.cli.GetBot()
 		if err != nil {
