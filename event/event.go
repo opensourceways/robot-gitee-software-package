@@ -2,6 +2,7 @@ package event
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/opensourceways/kafka-lib/kafka"
@@ -40,12 +41,22 @@ func (e *Event) Subscribe() (subscribers map[string]mq.Subscriber, err error) {
 	return
 }
 
+func (e *Event) validateMessage(msg *mq.Message) error {
+	if msg == nil {
+		return errors.New("get a nil msg from broker")
+	}
+
+	if len(msg.Body) == 0 {
+		return errors.New("unexpect message: The payload is empty")
+	}
+
+	return nil
+}
+
 func (e *Event) newPkgHandle(event mq.Event) error {
-	e.log = logrus.WithFields(
-		logrus.Fields{
-			"msg": event.Message(),
-		},
-	)
+	if err := e.validateMessage(event.Message()); err != nil {
+		return err
+	}
 
 	e.createPR(event.Message())
 
@@ -58,6 +69,12 @@ func (e *Event) createPR(msg *mq.Message) {
 		e.log.WithError(err).Error("unmarshal")
 		return
 	}
+
+	e.log = logrus.WithFields(
+		logrus.Fields{
+			"msg": c,
+		},
+	)
 
 	if err := c.initRepo(e.cfg); err != nil {
 		e.log.WithError(err).Error("init repo")
