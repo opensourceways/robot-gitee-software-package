@@ -2,8 +2,10 @@ package event
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,37 +15,23 @@ import (
 
 const repoHandleScript = "./repo.sh"
 
-var appendToSigInfo = `
-- repo:
-  - src-openeuler/%s
-  committers:
-  - email: %s
-    name: %s
-`
-
-var createRepoConfigFile = `
-name: %s
-description: %s
-upstream: %s
-branches:
-- name: %s
-type: %s
-type: %s
-`
-
 type CreatePRParam domain.SoftwarePkgAppliedEvent
 
 func (c CreatePRParam) modifyFiles(cfg *Config) error {
-	if err := c.appendToSigInfo(); err != nil {
+	if err := c.appendToSigInfo(cfg); err != nil {
 		return err
 	}
 
 	return c.newCreateRepoYaml(cfg)
 }
 
-func (c CreatePRParam) appendToSigInfo() error {
-	appendContent := fmt.Sprintf(appendToSigInfo, c.PkgName, c.ImporterEmail, c.Importer)
-	fileName := fmt.Sprintf("community/sig/%s/sig-info.yaml", c.ImportingPkgSig)
+func (c CreatePRParam) appendToSigInfo(cfg *Config) error {
+	appendContent, err := c.genAppendSigInfoData()
+	if err != nil {
+		return err
+	}
+
+	fileName := fmt.Sprintf(cfg.PR.ModifyFiles.SigInfo, c.ImportingPkgSig)
 
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -65,16 +53,14 @@ func (c CreatePRParam) appendToSigInfo() error {
 
 func (c CreatePRParam) newCreateRepoYaml(cfg *Config) error {
 	subDirName := strings.ToLower(c.PkgName[:1])
-	fileName := fmt.Sprintf("community/sig/%s/src-openeuler/%s/%s.yaml",
+	fileName := fmt.Sprintf(cfg.PR.ModifyFiles.NewRepo,
 		c.ImportingPkgSig, subDirName, c.PkgName,
 	)
 
-	content := fmt.Sprintf(createRepoConfigFile,
-		c.PkgName, c.PkgDesc, c.SourceCodeURL,
-		cfg.PkgRepoBranch.Name,
-		cfg.PkgRepoBranch.ProtectType,
-		cfg.PkgRepoBranch.PublicType,
-	)
+	content, err := c.genNewRepoData(cfg)
+	if err != nil {
+		return err
+	}
 
 	return os.WriteFile(fileName, []byte(content), 0644)
 }
@@ -88,7 +74,7 @@ var (
 )
 
 func (c CreatePRParam) initRepo(cfg *Config) error {
-	if s, err := os.Stat(repoName); err == nil && s.IsDir() {
+	if s, err := os.Stat(cfg.PR.Repo); err == nil && s.IsDir() {
 		return nil
 	}
 
@@ -104,12 +90,61 @@ func (c CreatePRParam) commit(cfg *Config) error {
 }
 
 func (c CreatePRParam) execScript(cfg *Config, cmdType CmdType) error {
-	cmd := exec.Command(repoHandleScript, string(cmdType), cfg.Robot.Username,
-		cfg.Robot.Password, cfg.Robot.Email, branchName(c.PkgName))
+	cmd := exec.Command(repoHandleScript, string(cmdType),
+		cfg.Robot.Username, cfg.Robot.Password,
+		cfg.Robot.Email, branchName(cfg.PR.BranchName, c.PkgName))
 
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return errors.New(string(output))
 	}
 
 	return nil
+}
+
+func (c CreatePRParam) genAppendSigInfoData() (string, error) {
+	data := struct {
+		PkgName       string
+		ImporterEmail string
+		Importer      string
+	}{
+		PkgName:       c.PkgName,
+		ImporterEmail: c.ImporterEmail,
+		Importer:      c.Importer,
+	}
+
+	return genTemplate("./template/append_sig_info.tpl", data)
+}
+
+func (c CreatePRParam) genNewRepoData(cfg *Config) (string, error) {
+	data := struct {
+		PkgName       string
+		PkgDesc       string
+		SourceCodeUrl string
+		BranchName    string
+		ProtectType   string
+		PublicType    string
+	}{
+		PkgName:       c.PkgName,
+		PkgDesc:       c.PkgDesc,
+		SourceCodeUrl: c.SourceCodeURL,
+		BranchName:    cfg.PR.NewRepoBranch.Name,
+		ProtectType:   cfg.PR.NewRepoBranch.ProtectType,
+		PublicType:    cfg.PR.NewRepoBranch.PublicType,
+	}
+
+	return genTemplate("./template/new_repo_file.tpl", data)
+}
+
+func genTemplate(fileName string, data interface{}) (string, error) {
+	tmpl, err := template.ParseFiles(fileName)
+	if err != nil {
+		return "", err
+	}
+
+	buf := new(bytes.Buffer)
+	if err = tmpl.Execute(buf, data); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

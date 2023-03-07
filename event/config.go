@@ -5,10 +5,10 @@ import (
 )
 
 type Config struct {
-	KafkaAddress  string        `json:"kafka_address"   required:"true"`
-	Topics        Topics        `json:"topics"`
-	Robot         RobotConfig   `json:"robot"`
-	PkgRepoBranch PkgRepoBranch `json:"pkg_repo_branch"`
+	KafkaAddress string      `json:"kafka_address"   required:"true"`
+	Topics       Topics      `json:"topics"`
+	Robot        RobotConfig `json:"robot"`
+	PR           PRConfig    `json:"pr"`
 }
 
 func (c *Config) Validate() error {
@@ -24,27 +24,57 @@ func (c *Config) Validate() error {
 		return errors.New("missing ci passed topic")
 	}
 
+	if c.Robot.Username == "" {
+		return errors.New("missing robot username")
+	}
+
+	if c.Robot.Password == "" {
+		return errors.New("missing robot password")
+	}
+
+	if c.Robot.Email == "" {
+		return errors.New("missing robot email")
+	}
+
 	return nil
 }
 
 func (c *Config) SetDefault() {
-	if c.PkgRepoBranch.Name == "" {
-		c.PkgRepoBranch.Name = "master"
+	if c.PR.NewRepoBranch.Name == "" {
+		c.PR.NewRepoBranch.Name = "master"
 	}
 
-	if c.PkgRepoBranch.ProtectType == "" {
-		c.PkgRepoBranch.ProtectType = "protected"
+	if c.PR.NewRepoBranch.ProtectType == "" {
+		c.PR.NewRepoBranch.ProtectType = "protected"
 	}
 
-	if c.PkgRepoBranch.PublicType == "" {
-		c.PkgRepoBranch.PublicType = "public"
+	if c.PR.NewRepoBranch.PublicType == "" {
+		c.PR.NewRepoBranch.PublicType = "public"
 	}
-}
 
-type PkgRepoBranch struct {
-	Name        string `json:"name"`
-	ProtectType string `json:"protect_type"`
-	PublicType  string `json:"public_type"`
+	if c.PR.Org == "" {
+		c.PR.Org = "openeuler"
+	}
+
+	if c.PR.Repo == "" {
+		c.PR.Repo = "community"
+	}
+
+	if c.PR.BranchName == "" {
+		c.PR.BranchName = "software_pkg_%s"
+	}
+
+	if c.PR.PRName == "" {
+		c.PR.PRName = "software_pkg_%s,新增软件包申请"
+	}
+
+	if c.PR.ModifyFiles.SigInfo == "" {
+		c.PR.ModifyFiles.SigInfo = "community/sig/%s/sig-info.yaml"
+	}
+
+	if c.PR.ModifyFiles.NewRepo == "" {
+		c.PR.ModifyFiles.NewRepo = "community/sig/%s/src-openeuler/%s/%s.yaml"
+	}
 }
 
 type RobotConfig struct {
@@ -56,4 +86,24 @@ type RobotConfig struct {
 type Topics struct {
 	NewPkg   string `json:"new_pkg"`
 	CIPassed string `json:"ci_passed"`
+}
+
+type PRConfig struct {
+	ModifyFiles   ModifyFiles   `json:"modify_files"`
+	NewRepoBranch NewRepoBranch `json:"new_repo_branch"`
+	Org           string        `json:"org"`
+	Repo          string        `json:"repo"`
+	BranchName    string        `json:"branch_name"`
+	PRName        string        `json:"pr_name"`
+}
+
+type ModifyFiles struct {
+	SigInfo string `json:"sig_info"`
+	NewRepo string `json:"new_repo"`
+}
+
+type NewRepoBranch struct {
+	Name        string `json:"name"`
+	ProtectType string `json:"protect_type"`
+	PublicType  string `json:"public_type"`
 }

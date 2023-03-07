@@ -11,16 +11,6 @@ import (
 	"github.com/opensourceways/robot-gitee-software-package/client"
 )
 
-const (
-	org = "openeuler"
-
-	repoName = "community"
-
-	branchNameFormat = "software_pkg_%s"
-
-	prNameFormat = branchNameFormat + ",新增软件包申请"
-)
-
 var robotLogin string
 
 type Event struct {
@@ -101,16 +91,16 @@ func (e *Event) createPRWithApi(p CreatePRParam) error {
 		return err
 	}
 
-	head := fmt.Sprintf("%s:%s", robotName, branchName(p.PkgName))
+	head := fmt.Sprintf("%s:%s", robotName, branchName(e.cfg.PR.BranchName, p.PkgName))
 	pr, err := e.cli.CreatePullRequest(
-		org, repoName, prName(p.PkgName),
+		e.cfg.PR.Org, e.cfg.PR.Repo, prName(e.cfg.PR.PRName, p.PkgName),
 		p.ReasonToImportPkg, head, "master", true,
 	)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("pr number is %d", pr.Number)
+	e.log.Infof("pr number is %d", pr.Number)
 
 	return nil
 }
@@ -128,10 +118,10 @@ func (e *Event) getRobotLogin() (string, error) {
 	return robotLogin, nil
 }
 
-func branchName(pkgName string) string {
-	return fmt.Sprintf(branchNameFormat, pkgName)
+func branchName(branchName, pkgName string) string {
+	return fmt.Sprintf(branchName, pkgName)
 }
 
-func prName(pkgName string) string {
-	return fmt.Sprintf(prNameFormat, pkgName)
+func prName(prName, pkgName string) string {
+	return fmt.Sprintf(prName, pkgName)
 }

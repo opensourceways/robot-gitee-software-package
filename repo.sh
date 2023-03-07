@@ -19,6 +19,9 @@ init() {
 new_branch() {
     cd  $repo
 
+    git checkout -- .
+    git clean -fd
+
     git checkout master
 
     git fetch upstream
