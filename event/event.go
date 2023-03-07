@@ -5,23 +5,28 @@ import (
 	"errors"
 	"fmt"
 
+	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/opensourceways/kafka-lib/kafka"
 	"github.com/opensourceways/kafka-lib/mq"
 	"github.com/sirupsen/logrus"
-
-	"github.com/opensourceways/robot-gitee-software-package/client"
 )
 
 var robotLogin string
 
 type Event struct {
-	cli   client.IClient
-	cfg   *Config
-	log   *logrus.Entry
-	group string
+	group       string
+	cli         iClient
+	cfg         *Config
+	log         *logrus.Entry
+	subscribers map[string]mq.Subscriber
 }
 
-func NewEvent(cfg *Config, cli client.IClient, group string) *Event {
+type iClient interface {
+	GetBot() (sdk.User, error)
+	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (sdk.PullRequest, error)
+}
+
+func NewEvent(cfg *Config, cli iClient, group string) *Event {
 	return &Event{
 		cli:   cli,
 		cfg:   cfg,
@@ -29,16 +34,25 @@ func NewEvent(cfg *Config, cli client.IClient, group string) *Event {
 	}
 }
 
-func (e *Event) Subscribe() (subscribers map[string]mq.Subscriber, err error) {
-	subscribers = make(map[string]mq.Subscriber)
+func (e *Event) Unsubscribe() {
+	for k, v := range e.subscribers {
+		if err := v.Unsubscribe(); err != nil {
+			logrus.Errorf("failed to unsubscribe for topic:%s, err:%v", k, err)
+		}
+	}
+}
+
+func (e *Event) Subscribe() error {
+	e.subscribers = make(map[string]mq.Subscriber)
 
 	s, err := kafka.Subscribe(e.cfg.Topics.NewPkg, e.group, e.newPkgHandle)
 	if err != nil {
-		return
+		return err
 	}
-	subscribers[s.Topic()] = s
 
-	return
+	e.subscribers[s.Topic()] = s
+
+	return nil
 }
 
 func (e *Event) validateMessage(msg *mq.Message) error {

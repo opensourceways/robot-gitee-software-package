@@ -8,27 +8,28 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/opensourceways/robot-gitee-lib/framework"
-
-	"github.com/opensourceways/robot-gitee-software-package/client"
-	config2 "github.com/opensourceways/robot-gitee-software-package/config"
 )
 
+// TODO: set botName
 const botName = "software-package"
 
-func newRobot(cli client.IClient) *robot {
+type iClient interface {
+}
+
+func newRobot(cli iClient) *robot {
 	return &robot{cli: cli}
 }
 
 type robot struct {
-	cli client.IClient
+	cli iClient
 }
 
 func (bot *robot) NewConfig() config.Config {
-	return &config2.Config{}
+	return &configuration{}
 }
 
-func (bot *robot) getConfig(cfg config.Config) (*config2.Config, error) {
-	if c, ok := cfg.(*config2.Config); ok {
+func (bot *robot) getConfig(cfg config.Config) (*configuration, error) {
+	if c, ok := cfg.(*configuration); ok {
 		return c, nil
 	}
 	return nil, errors.New("can't convert to configuration")

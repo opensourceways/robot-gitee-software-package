@@ -1,4 +1,4 @@
-package config
+package main
 
 import (
 	"github.com/opensourceways/server-common-lib/config"
@@ -7,13 +7,13 @@ import (
 	"github.com/opensourceways/robot-gitee-software-package/event"
 )
 
-type Config struct {
+type configuration struct {
 	ConfigItems []botConfig  `json:"config_items,omitempty"`
 	Event       event.Config `json:"event_config"`
 }
 
-func LoadConfig(path string) (*Config, error) {
-	cfg := new(Config)
+func LoadConfig(path string) (*configuration, error) {
+	cfg := new(configuration)
 	if err := utils.LoadFromYaml(path, cfg); err != nil {
 		return nil, err
 	}
@@ -26,7 +26,25 @@ func LoadConfig(path string) (*Config, error) {
 	return cfg, nil
 }
 
-func (c *Config) Validate() error {
+func (c *configuration) configFor(org, repo string) *botConfig {
+	if c == nil {
+		return nil
+	}
+
+	items := c.ConfigItems
+	v := make([]config.IRepoFilter, len(items))
+	for i := range items {
+		v[i] = &items[i]
+	}
+
+	if i := config.Find(org, repo, v); i >= 0 {
+		return &items[i]
+	}
+
+	return nil
+}
+
+func (c *configuration) Validate() error {
 	if c == nil {
 		return nil
 	}
@@ -45,7 +63,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func (c *Config) SetDefault() {
+func (c *configuration) SetDefault() {
 	if c == nil {
 		return
 	}
