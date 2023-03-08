@@ -2,16 +2,32 @@ package message
 
 import (
 	"errors"
+
+	"github.com/opensourceways/server-common-lib/utils"
 )
 
-type Config struct {
+type config struct {
 	KafkaAddress string      `json:"kafka_address"   required:"true"`
 	Topics       Topics      `json:"topics"`
 	Robot        RobotConfig `json:"robot"`
 	PR           PRConfig    `json:"pr"`
 }
 
-func (c *Config) Validate() error {
+func loadConfig(path string) (*config, error) {
+	cfg := new(config)
+	if err := utils.LoadFromYaml(path, cfg); err != nil {
+		return nil, err
+	}
+
+	cfg.SetDefault()
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (c *config) Validate() error {
 	if c.KafkaAddress == "" {
 		return errors.New("missing kafka_address")
 	}
@@ -39,7 +55,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func (c *Config) SetDefault() {
+func (c *config) SetDefault() {
 	if c.PR.NewRepoBranch.Name == "" {
 		c.PR.NewRepoBranch.Name = "master"
 	}

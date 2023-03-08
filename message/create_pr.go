@@ -17,7 +17,7 @@ const repoHandleScript = "./repo.sh"
 
 type CreatePRParam domain.SoftwarePkgAppliedEvent
 
-func (c CreatePRParam) modifyFiles(cfg *Config) error {
+func (c CreatePRParam) modifyFiles(cfg *config) error {
 	if err := c.appendToSigInfo(cfg); err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (c CreatePRParam) modifyFiles(cfg *Config) error {
 	return c.newCreateRepoYaml(cfg)
 }
 
-func (c CreatePRParam) appendToSigInfo(cfg *Config) error {
+func (c CreatePRParam) appendToSigInfo(cfg *config) error {
 	appendContent, err := c.genAppendSigInfoData()
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (c CreatePRParam) appendToSigInfo(cfg *Config) error {
 	return nil
 }
 
-func (c CreatePRParam) newCreateRepoYaml(cfg *Config) error {
+func (c CreatePRParam) newCreateRepoYaml(cfg *config) error {
 	subDirName := strings.ToLower(c.PkgName[:1])
 	fileName := fmt.Sprintf(cfg.PR.ModifyFiles.NewRepo,
 		c.ImportingPkgSig, subDirName, c.PkgName,
@@ -73,7 +73,7 @@ var (
 	cmdCommit    = CmdType("commit")
 )
 
-func (c CreatePRParam) initRepo(cfg *Config) error {
+func (c CreatePRParam) initRepo(cfg *config) error {
 	if s, err := os.Stat(cfg.PR.Repo); err == nil && s.IsDir() {
 		return nil
 	}
@@ -81,15 +81,15 @@ func (c CreatePRParam) initRepo(cfg *Config) error {
 	return c.execScript(cfg, cmdInit)
 }
 
-func (c CreatePRParam) newBranch(cfg *Config) error {
+func (c CreatePRParam) newBranch(cfg *config) error {
 	return c.execScript(cfg, cmdNewBranch)
 }
 
-func (c CreatePRParam) commit(cfg *Config) error {
+func (c CreatePRParam) commit(cfg *config) error {
 	return c.execScript(cfg, cmdCommit)
 }
 
-func (c CreatePRParam) execScript(cfg *Config, cmdType CmdType) error {
+func (c CreatePRParam) execScript(cfg *config, cmdType CmdType) error {
 	cmd := exec.Command(repoHandleScript, string(cmdType),
 		cfg.Robot.Username, cfg.Robot.Password,
 		cfg.Robot.Email, branchName(cfg.PR.BranchName, c.PkgName))
@@ -115,7 +115,7 @@ func (c CreatePRParam) genAppendSigInfoData() (string, error) {
 	return genTemplate("./template/append_sig_info.tpl", data)
 }
 
-func (c CreatePRParam) genNewRepoData(cfg *Config) (string, error) {
+func (c CreatePRParam) genNewRepoData(cfg *config) (string, error) {
 	data := struct {
 		PkgName       string
 		PkgDesc       string

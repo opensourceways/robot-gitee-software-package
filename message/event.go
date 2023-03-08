@@ -16,7 +16,7 @@ var robotLogin string
 type Event struct {
 	group       string
 	cli         iClient
-	cfg         *Config
+	cfg         *config
 	log         *logrus.Entry
 	subscribers map[string]mq.Subscriber
 }
@@ -26,8 +26,13 @@ type iClient interface {
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (sdk.PullRequest, error)
 }
 
-func InitEvent(cfg *Config, cli iClient, group string) (*Event, error) {
-	if err := mqInit(cfg.KafkaAddress); err != nil {
+func InitEvent(cfgFile, group string, cli iClient) (*Event, error) {
+	cfg, err := loadConfig(cfgFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = mqInit(cfg.KafkaAddress); err != nil {
 		return nil, err
 	}
 
@@ -37,7 +42,7 @@ func InitEvent(cfg *Config, cli iClient, group string) (*Event, error) {
 		group: group,
 	}
 
-	if err := e.subscribe(); err != nil {
+	if err = e.subscribe(); err != nil {
 		return nil, err
 	}
 

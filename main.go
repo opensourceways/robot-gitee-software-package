@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"os"
 
@@ -15,13 +16,18 @@ import (
 )
 
 type options struct {
-	service liboptions.ServiceOptions
-	gitee   liboptions.GiteeOptions
+	service       liboptions.ServiceOptions
+	gitee         liboptions.GiteeOptions
+	MsgConfigFile string
 }
 
 func (o *options) Validate() error {
 	if err := o.service.Validate(); err != nil {
 		return err
+	}
+
+	if o.MsgConfigFile == "" {
+		return errors.New("missing message config file")
 	}
 
 	return o.gitee.Validate()
@@ -32,6 +38,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	o.gitee.AddFlags(fs)
 	o.service.AddFlags(fs)
+	fs.StringVar(&o.MsgConfigFile, "msg-config-file", "", "Path to message config file.")
 
 	fs.Parse(args)
 	return o
@@ -54,12 +61,7 @@ func main() {
 
 	c := client.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
-	cfg, err := LoadConfig(o.service.ConfigFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("get config failed")
-	}
-
-	e, err := message.InitEvent(&cfg.Event, c, botName)
+	e, err := message.InitEvent(o.MsgConfigFile, botName, c)
 	if err != nil {
 		logrus.WithError(err).Fatal("init event failed")
 	}
