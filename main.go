@@ -57,20 +57,13 @@ func main() {
 
 	defer secretAgent.Stop()
 
-	if err = event.Init(cfg.Event.KafkaAddress); err != nil {
-		logrus.WithError(err).Fatal("init kafka failed")
-	}
-
-	defer event.Exit()
-
 	c := client.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
-	e := event.NewEvent(&cfg.Event, c, botName)
-
-	if err = e.Subscribe(); err != nil {
-		logrus.WithError(err).Fatal("subscribe failed")
+	e, err := event.InitEvent(&cfg.Event, c, botName)
+	if err != nil {
+		logrus.WithError(err).Fatal("init event failed")
 	}
-	defer e.Unsubscribe()
+	defer e.Exit()
 
 	r := newRobot(c)
 

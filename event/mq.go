@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Init(address string) error {
+func mqInit(address string) error {
 	err := kafka.Init(
 		mq.Addresses(address),
 		mq.Log(logrus.WithField("module", "kfk")),
@@ -18,7 +18,7 @@ func Init(address string) error {
 	return kafka.Connect()
 }
 
-func Exit() {
+func mqExit() {
 	if err := kafka.Disconnect(); err != nil {
 		logrus.Errorf("exit kafka, err:%v", err)
 	}

@@ -26,15 +26,31 @@ type iClient interface {
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (sdk.PullRequest, error)
 }
 
-func NewEvent(cfg *Config, cli iClient, group string) *Event {
-	return &Event{
+func InitEvent(cfg *Config, cli iClient, group string) (*Event, error) {
+	if err := mqInit(cfg.KafkaAddress); err != nil {
+		return nil, err
+	}
+
+	e := &Event{
 		cli:   cli,
 		cfg:   cfg,
 		group: group,
 	}
+
+	if err := e.subscribe(); err != nil {
+		return nil, err
+	}
+
+	return e, nil
 }
 
-func (e *Event) Unsubscribe() {
+func (e *Event) Exit() {
+	e.unsubscribe()
+
+	mqExit()
+}
+
+func (e *Event) unsubscribe() {
 	for k, v := range e.subscribers {
 		if err := v.Unsubscribe(); err != nil {
 			logrus.Errorf("failed to unsubscribe for topic:%s, err:%v", k, err)
@@ -42,7 +58,7 @@ func (e *Event) Unsubscribe() {
 	}
 }
 
-func (e *Event) Subscribe() error {
+func (e *Event) subscribe() error {
 	e.subscribers = make(map[string]mq.Subscriber)
 
 	s, err := kafka.Subscribe(e.cfg.Topics.NewPkg, e.group, e.newPkgHandle)

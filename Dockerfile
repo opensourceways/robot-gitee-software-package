@@ -12,6 +12,6 @@ FROM alpine:3.14
 COPY --from=BUILDER /go/src/github.com/opensourceways/robot-gitee-software-package/robot-gitee-software-package /opt/app/robot-gitee-software-package
 COPY event/repo.sh /opt/app/repo.sh
 COPY event/template /opt/app/template
-RUN chmod +x /opt/app/repo.sh && apk update && apk add --no-cache git
+RUN chmod +x /opt/app/repo.sh && apk update && apk add --no-cache git libc6-compat
 
 ENTRYPOINT ["/opt/app/robot-gitee-software-package"]
