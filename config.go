@@ -4,12 +4,12 @@ import (
 	"github.com/opensourceways/server-common-lib/config"
 	"github.com/opensourceways/server-common-lib/utils"
 
-	"github.com/opensourceways/robot-gitee-software-package/event"
+	"github.com/opensourceways/robot-gitee-software-package/message"
 )
 
 type configuration struct {
-	ConfigItems []botConfig  `json:"config_items,omitempty"`
-	Event       event.Config `json:"event_config"`
+	ConfigItems []botConfig    `json:"config_items,omitempty"`
+	Event       message.Config `json:"event_config"`
 }
 
 func LoadConfig(path string) (*configuration, error) {

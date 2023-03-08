@@ -1,4 +1,4 @@
-package event
+package message
 
 import (
 	"github.com/opensourceways/kafka-lib/kafka"

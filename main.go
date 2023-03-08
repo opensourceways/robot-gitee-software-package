@@ -11,7 +11,7 @@ import (
 	"github.com/opensourceways/server-common-lib/secret"
 	"github.com/sirupsen/logrus"
 
-	"github.com/opensourceways/robot-gitee-software-package/event"
+	"github.com/opensourceways/robot-gitee-software-package/message"
 )
 
 type options struct {
@@ -45,13 +45,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	cfg, err := LoadConfig(o.service.ConfigFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("get config failed")
-	}
-
 	secretAgent := new(secret.Agent)
-	if err = secretAgent.Start([]string{o.gitee.TokenPath}); err != nil {
+	if err := secretAgent.Start([]string{o.gitee.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secret agent.")
 	}
 
@@ -59,7 +54,12 @@ func main() {
 
 	c := client.NewClient(secretAgent.GetTokenGenerator(o.gitee.TokenPath))
 
-	e, err := event.InitEvent(&cfg.Event, c, botName)
+	cfg, err := LoadConfig(o.service.ConfigFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("get config failed")
+	}
+
+	e, err := message.InitEvent(&cfg.Event, c, botName)
 	if err != nil {
 		logrus.WithError(err).Fatal("init event failed")
 	}
