@@ -17,7 +17,7 @@ const botName = "software-package"
 type iClient interface {
 }
 
-func newRobot(cli iClient, prService app.MessageService) *robot {
+func newRobot(cli iClient, prService app.PullRequestService) *robot {
 	return &robot{
 		cli:       cli,
 		prService: prService,
@@ -26,7 +26,7 @@ func newRobot(cli iClient, prService app.MessageService) *robot {
 
 type robot struct {
 	cli       iClient
-	prService app.MessageService
+	prService app.PullRequestService
 }
 
 func (bot *robot) NewConfig() config.Config {
@@ -59,11 +59,13 @@ func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, c config.Config, log *l
 
 	prState := e.GetPullRequest().GetState()
 
-	if prState == sdk.StatusOpen &&
-		sdk.GetPullRequestAction(e) == sdk.PRActionUpdatedLabel {
-
-		return bot.handleCILabel(e, cfg)
+	if prState != sdk.StatusOpen {
+		return nil
 	}
 
-	return nil
+	if sdk.GetPullRequestAction(e) != sdk.PRActionUpdatedLabel {
+		return nil
+	}
+
+	return bot.handleCILabel(e, cfg)
 }

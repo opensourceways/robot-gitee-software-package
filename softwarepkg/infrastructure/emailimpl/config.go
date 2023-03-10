@@ -11,11 +11,3 @@ type EmailServer struct {
 	Host     string `json:"host"      required:"true"`
 	Port     int    `json:"port"      required:"true"`
 }
-
-func (cfg *Config) SetDefault() {
-
-}
-
-func (cfg *Config) Validate() error {
-	return nil
-}

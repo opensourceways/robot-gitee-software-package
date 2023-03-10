@@ -7,17 +7,17 @@ import (
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/repository"
 )
 
-type PRService interface {
+type PullRequestService interface {
 	HandleCI(cmd *CmdToHandleCI) error
 }
 
-type prService struct {
+type pullRequestService struct {
 	repo     repository.PullRequest
 	producer message.SoftwarePkgMessage
 	email    email.Email
 }
 
-func (s *prService) HandleCI(cmd *CmdToHandleCI) error {
+func (s *pullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 	pr, err := s.repo.Find(cmd.PRNum)
 	if err != nil {
 		return err
