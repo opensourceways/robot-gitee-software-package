@@ -17,7 +17,7 @@ const botName = "software-package"
 type iClient interface {
 }
 
-func newRobot(cli iClient, prService *app.PullRequestService) *robot {
+func newRobot(cli iClient, prService app.MessageService) *robot {
 	return &robot{
 		cli:       cli,
 		prService: prService,
@@ -26,7 +26,7 @@ func newRobot(cli iClient, prService *app.PullRequestService) *robot {
 
 type robot struct {
 	cli       iClient
-	prService *app.PullRequestService
+	prService app.MessageService
 }
 
 func (bot *robot) NewConfig() config.Config {
