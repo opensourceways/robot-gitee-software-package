@@ -6,5 +6,4 @@ type PullRequest interface {
 	Create(*domain.SoftwarePkg) (domain.PullRequest, error)
 	Merge(*domain.PullRequest) error
 	Close(*domain.PullRequest) error
-	SendEmail(url string) error
 }

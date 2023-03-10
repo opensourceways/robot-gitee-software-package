@@ -1,11 +1,9 @@
 package pullrequestimpl
 
 type Config struct {
-	Robot           RobotConfig `json:"robot"`
-	PR              PRConfig    `json:"pr"`
-	ShellScript     string      `json:"shell_script"`
-	EmailServer     EmailServer `json:"email"`
-	MaintainerEmail string      `json:"maintainer_email" require:"true"`
+	Robot       RobotConfig `json:"robot"`
+	PR          PRConfig    `json:"pr"`
+	ShellScript string      `json:"shell_script"`
 }
 
 func (cfg *Config) SetDefault() {
@@ -63,11 +61,4 @@ func (cfg *NewRepoBranch) setDefault() {
 	if cfg.PublicType == "" {
 		cfg.PublicType = "public"
 	}
-}
-
-type EmailServer struct {
-	AuthCode string `json:"auth_code" required:"true"`
-	From     string `json:"from"      required:"true"`
-	Host     string `json:"host"      required:"true"`
-	Port     int    `json:"port"      required:"true"`
 }

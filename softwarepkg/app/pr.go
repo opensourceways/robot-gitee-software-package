@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
+	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/email"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/message"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/pullrequest"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/repository"
@@ -16,6 +17,7 @@ type pullRequestService struct {
 	repo     repository.PullRequest
 	prCli    pullrequest.PullRequest
 	producer message.SoftwarePkgMessage
+	email    email.Email
 }
 
 func (s *pullRequestService) CreatePR(cmd *CmdToCreatePR) error {
@@ -34,7 +36,7 @@ func (s *pullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 	}
 
 	if !cmd.IsSuccess() {
-		if err = s.prCli.SendEmail(pr.Link); err != nil {
+		if err = s.email.Send(pr.Link); err != nil {
 			return err
 		}
 	}
