@@ -11,13 +11,13 @@ type MessageService interface {
 	CreatePR(cmd *CmdToCreatePR) error
 }
 
-type pullRequestService struct {
+type PullRequestService struct {
 	repo     repository.PullRequest
 	prCli    pullrequest.PullRequest
 	producer message.SoftwarePkgMessage
 }
 
-func (s *pullRequestService) CreatePR(cmd *CmdToCreatePR) error {
+func (s *PullRequestService) CreatePR(cmd *CmdToCreatePR) error {
 	pr, err := s.prCli.Create(cmd)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (s *pullRequestService) CreatePR(cmd *CmdToCreatePR) error {
 	return s.repo.Add(&pr)
 }
 
-func (s *pullRequestService) HandleCI(cmd CmdToHandleCI) error {
+func (s *PullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 	pr, err := s.repo.Find(cmd.PRNum)
 	if err != nil {
 		return err

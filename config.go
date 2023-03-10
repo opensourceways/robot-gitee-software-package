@@ -52,6 +52,9 @@ func (c *configuration) SetDefault() {
 
 type botConfig struct {
 	config.RepoFilter
+	CILabel         CILabelType `json:"ci_label"`
+	EmailServer     EmailServer `json:"email"`
+	MaintainerEmail string      `json:"maintainer_email" require:"true"`
 }
 
 func (c *botConfig) setDefault() {
@@ -59,4 +62,16 @@ func (c *botConfig) setDefault() {
 
 func (c *botConfig) validate() error {
 	return c.RepoFilter.Validate()
+}
+
+type CILabelType struct {
+	Success string `json:"success"`
+	Fail    string `json:"fail"`
+}
+
+type EmailServer struct {
+	AuthCode string `json:"auth_code" required:"true"`
+	From     string `json:"from"      required:"true"`
+	Host     string `json:"host"      required:"true"`
+	Port     int    `json:"port"      required:"true"`
 }
