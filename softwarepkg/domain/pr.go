@@ -14,8 +14,8 @@ type SoftwarePkgApplication struct {
 }
 
 type SoftwarePkgBasic struct {
-	Id   string
-	Name string
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type SoftwarePkg struct {
@@ -28,9 +28,9 @@ type SoftwarePkg struct {
 
 // PullRequest
 type PullRequest struct {
-	Num  int
-	Link string
-	Pkg  SoftwarePkgBasic
+	Num  int              `json:"num"`
+	Link string           `json:"link"`
+	Pkg  SoftwarePkgBasic `json:"pkg"`
 }
 
 // SoftwarePkgRepo

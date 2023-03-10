@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/opensourceways/server-common-lib/utils"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
 )
