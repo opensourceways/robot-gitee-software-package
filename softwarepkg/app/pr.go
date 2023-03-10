@@ -35,7 +35,7 @@ func (s *pullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 		return err
 	}
 
-	if !cmd.IsSuccess() {
+	if !cmd.isSuccess() {
 		if err = s.email.Send(pr.Link); err != nil {
 			return err
 		}

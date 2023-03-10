@@ -9,6 +9,6 @@ type CmdToHandleCI struct {
 	FailedReason string
 }
 
-func (c *CmdToHandleCI) IsSuccess() bool {
+func (c *CmdToHandleCI) isSuccess() bool {
 	return c.FailedReason == ""
 }
