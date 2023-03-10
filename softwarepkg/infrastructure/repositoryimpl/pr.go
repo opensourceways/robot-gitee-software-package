@@ -1,4 +1,4 @@
-package pullrequestimpl
+package repositoryimpl
 
 import (
 	"fmt"
@@ -12,7 +12,14 @@ import (
 
 const prDir = "pr-storage"
 
-func (impl *pullRequestImpl) Add(pr *domain.PullRequest) error {
+func NewRepositoryImpl() *RepositoryImpl {
+	return &RepositoryImpl{}
+}
+
+type RepositoryImpl struct {
+}
+
+func (impl *RepositoryImpl) Add(pr *domain.PullRequest) error {
 	data, err := yaml.Marshal(pr)
 	if err != nil {
 		return err
@@ -26,7 +33,7 @@ func (impl *pullRequestImpl) Add(pr *domain.PullRequest) error {
 	return os.WriteFile(fileName, data, 0644)
 }
 
-func (impl *pullRequestImpl) Find(prNum int) (pr domain.PullRequest, err error) {
+func (impl *RepositoryImpl) Find(prNum int) (pr domain.PullRequest, err error) {
 	fileName, err := impl.genFileName(prNum)
 	if err != nil {
 		return
@@ -44,7 +51,7 @@ func (impl *pullRequestImpl) Find(prNum int) (pr domain.PullRequest, err error) 
 	return
 }
 
-func (impl *pullRequestImpl) genFileName(prNum int) (string, error) {
+func (impl *RepositoryImpl) genFileName(prNum int) (string, error) {
 	if s, err := os.Stat(prDir); err != nil || !s.IsDir() {
 		if err = os.Mkdir(prDir, 755); err != nil {
 			return "", err
