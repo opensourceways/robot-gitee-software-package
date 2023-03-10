@@ -6,14 +6,14 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func NewEmailService(cfg *Config) *emailImpl {
+func NewEmailService(cfg Config) *emailImpl {
 	return &emailImpl{
 		cfg: cfg,
 	}
 }
 
 type emailImpl struct {
-	cfg *Config
+	cfg Config
 }
 
 func (impl *emailImpl) Send(url string) error {
