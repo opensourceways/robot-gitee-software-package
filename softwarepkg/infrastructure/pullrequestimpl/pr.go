@@ -1,7 +1,10 @@
 package pullrequestimpl
 
 import (
+	"fmt"
+
 	sdk "github.com/opensourceways/go-gitee/gitee"
+	"gopkg.in/gomail.v2"
 
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
 )
@@ -45,5 +48,29 @@ func (impl *pullRequestImpl) Merge(*domain.PullRequest) error {
 }
 
 func (impl *pullRequestImpl) Close(*domain.PullRequest) error {
+	return nil
+}
+
+func (impl *pullRequestImpl) SendEmail(url string) error {
+	d := gomail.NewDialer(
+		impl.cfg.EmailServer.Host,
+		impl.cfg.EmailServer.Port,
+		impl.cfg.EmailServer.From,
+		impl.cfg.EmailServer.AuthCode,
+	)
+
+	subject := "the CI of PR in openeuler/community is failed"
+	content := fmt.Sprintf("the pr url: %s", url)
+
+	message := gomail.NewMessage()
+	message.SetHeader("From", impl.cfg.EmailServer.From)
+	message.SetHeader("To", impl.cfg.MaintainerEmail)
+	message.SetHeader("Subject", subject)
+	message.SetBody("text/plain", content)
+
+	if err := d.DialAndSend(message); err != nil {
+		return err
+	}
+
 	return nil
 }

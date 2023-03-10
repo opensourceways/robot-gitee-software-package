@@ -32,6 +32,12 @@ func (s *PullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 		return err
 	}
 
+	if cmd.FailedReason != "" {
+		if err = s.prCli.SendEmail(pr.Link); err != nil {
+			return err
+		}
+	}
+
 	e := domain.NewPRCIFinishedEvent(&pr, cmd.FailedReason)
 	return s.producer.NotifyCIResult(&e)
 }
