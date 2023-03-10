@@ -27,8 +27,6 @@ new_branch() {
     git fetch upstream
     git rebase upstream/master
 
-    git push origin master
-
     git checkout -b $branch_name
 }
 
