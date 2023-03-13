@@ -31,13 +31,7 @@ func (s *messageService) MergePR(cmd *CmdToMergePR) error {
 		return err
 	}
 
-	if err = s.prCli.Merge(&pr); err != nil {
-		return err
-	}
-
-	//TODO monitor create repo
-
-	return nil
+	return s.prCli.Merge(&pr)
 }
 
 func (s *messageService) ClosePR(cmd *CmdToClosePR) error {

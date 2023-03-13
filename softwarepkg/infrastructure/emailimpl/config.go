@@ -2,7 +2,7 @@ package emailimpl
 
 type Config struct {
 	EmailServer     EmailServer `json:"email"`
-	MaintainerEmail string      `json:"maintainer_email" require:"true"`
+	MaintainerEmail string      `json:"maintainer_email" required:"true"`
 }
 
 type EmailServer struct {
