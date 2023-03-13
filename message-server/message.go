@@ -21,6 +21,10 @@ type messageOfApprovedPkg struct {
 
 func (msg *messageOfApprovedPkg) toCmd() (cmd app.CmdToMergePR, err error) {
 	sp := strings.Split(strings.TrimSuffix(msg.RelevantPR, "/"), "/")
+	if len(sp) == 0 {
+		return
+	}
+
 	prNumInt, err := strconv.Atoi(sp[len(sp)-1])
 	if err != nil {
 		return

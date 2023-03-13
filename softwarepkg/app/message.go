@@ -24,7 +24,7 @@ func (s *messageService) CreatePR(cmd *CmdToCreatePR) error {
 	return s.repo.Add(&pr)
 }
 
-func (s *messageService) MergePr(cmd *CmdToMergePR) error {
+func (s *messageService) MergePR(cmd *CmdToMergePR) error {
 	pr, err := s.repo.Find(cmd.PRNum)
 	if err != nil {
 		return err
