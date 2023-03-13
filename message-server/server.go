@@ -20,8 +20,8 @@ type messageServer struct {
 
 func (m *messageServer) Subscribe(cfg *Config) error {
 	subscribers := map[string]kafka.Handler{
-		cfg.Topics.ApplyingSoftwarePkg: m.handleNewPkg,
-		cfg.Topics.ApprovedSoftwarePkg: m.handleApprovedPkg,
+		cfg.Topics.NewPkg:      m.handleNewPkg,
+		cfg.Topics.ApprovedPkg: m.handleApprovedPkg,
 	}
 
 	return kafka.Instance().Subscribe(cfg.GroupName, subscribers)
@@ -60,5 +60,5 @@ func (m *messageServer) handleApprovedPkg(msg []byte) error {
 		return err
 	}
 
-	return m.service.MergePr(&cmd)
+	return m.service.MergePR(&cmd)
 }

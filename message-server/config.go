@@ -6,7 +6,7 @@ type Config struct {
 }
 
 type Topics struct {
-	CIPassed            string `json:"ci_passed"                    required:"true"`
-	ApplyingSoftwarePkg string `json:"applying_software_pkg"        required:"true"`
-	ApprovedSoftwarePkg string `json:"approved_software_pkg"        required:"true"`
+	NewPkg      string `json:"new_pkg"      required:"true"`
+	CIPassed    string `json:"ci_passed"    required:"true"`
+	ApprovedPkg string `json:"approved_pkg" required:"true"`
 }

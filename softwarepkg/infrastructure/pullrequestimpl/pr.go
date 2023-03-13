@@ -46,12 +46,12 @@ func (impl *pullRequestImpl) Merge(pr *domain.PullRequest) error {
 	org := impl.cfg.PR.Org
 	repo := impl.cfg.PR.Repo
 
-	prDetail, err := impl.cli.GetGiteePullRequest(org, repo, int32(pr.Num))
+	v, err := impl.cli.GetGiteePullRequest(org, repo, int32(pr.Num))
 	if err != nil {
 		return err
 	}
 
-	if prDetail.State != sdk.StatusOpen {
+	if v.State != sdk.StatusOpen {
 		return nil
 	}
 

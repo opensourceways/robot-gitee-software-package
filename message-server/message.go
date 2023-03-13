@@ -1,14 +1,11 @@
 package messageserver
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/app"
 )
-
-var prNumRe = regexp.MustCompile(`\d+$`)
 
 type messageOfNewPkg struct{}
 
@@ -23,7 +20,7 @@ type messageOfApprovedPkg struct {
 }
 
 func (msg *messageOfApprovedPkg) toCmd() (cmd app.CmdToMergePR, err error) {
-	sp := strings.Split(strings.Trim(msg.RelevantPR, "/"), "/")
+	sp := strings.Split(strings.TrimSuffix(msg.RelevantPR, "/"), "/")
 	prNumInt, err := strconv.Atoi(sp[len(sp)-1])
 	if err != nil {
 		return
