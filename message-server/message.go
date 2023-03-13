@@ -36,4 +36,4 @@ func (msg *messageOfApprovedPkg) toCmd() (cmd app.CmdToMergePR, err error) {
 	return
 }
 
-type messageOfRejectPkg = messageOfApprovedPkg
+type messageOfRejectedPkg = messageOfApprovedPkg
