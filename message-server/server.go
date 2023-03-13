@@ -22,7 +22,7 @@ func (m *messageServer) Subscribe(cfg *Config) error {
 	subscribers := map[string]kafka.Handler{
 		cfg.Topics.NewPkg:      m.handleNewPkg,
 		cfg.Topics.ApprovedPkg: m.handleApprovedPkg,
-		cfg.Topics.RejectPkg:   m.handleRejectPKg,
+		cfg.Topics.RejectPkg:   m.handleRejectPkg,
 	}
 
 	return kafka.Instance().Subscribe(cfg.GroupName, subscribers)
@@ -64,7 +64,7 @@ func (m *messageServer) handleApprovedPkg(msg []byte) error {
 	return m.service.MergePR(&cmd)
 }
 
-func (m *messageServer) handleRejectPKg(msg []byte) error {
+func (m *messageServer) handleRejectPkg(msg []byte) error {
 	if len(msg) == 0 {
 		return errors.New("unexpect message: The payload is empty")
 	}
