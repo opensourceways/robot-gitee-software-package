@@ -2,6 +2,8 @@ package domain
 
 import "encoding/json"
 
+const platform = "gitee"
+
 type prCIFinishedEvent struct {
 	PkgId        string `json:"pkg_id"`
 	PkgName      string `json:"pkg_name"`
@@ -25,9 +27,10 @@ func NewPRCIFinishedEvent(pr *PullRequest, failedReason string) prCIFinishedEven
 }
 
 type repoCreatedEvent struct {
-	PkgId   string `json:"pkg_id"`
-	PkgName string `json:"pkg_name"`
-	RepoURL string `json:"repo_url"`
+	PkgId        string `json:"pkg_id"`
+	Platform     string `json:"platform"`
+	RepoLink     string `json:"repo_link"`
+	FailedReason string `json:"failed_reason"`
 }
 
 func (e *repoCreatedEvent) Message() ([]byte, error) {
@@ -36,8 +39,9 @@ func (e *repoCreatedEvent) Message() ([]byte, error) {
 
 func NewRepoCreatedEvent(pr *PullRequest, url string) repoCreatedEvent {
 	return repoCreatedEvent{
-		PkgId:   pr.Pkg.Id,
-		PkgName: pr.Pkg.Name,
-		RepoURL: url,
+		PkgId:        pr.Pkg.Id,
+		Platform:     platform,
+		RepoLink:     url,
+		FailedReason: "",
 	}
 }
