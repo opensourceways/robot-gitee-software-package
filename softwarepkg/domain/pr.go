@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 type SoftwarePkgSourceCode struct {
 	Address string
 	License string
@@ -37,4 +39,14 @@ type PullRequest struct {
 type SoftwarePkgRepo struct {
 	Pkg     SoftwarePkgBasic
 	RepoURL string
+}
+
+func ToSoftwarePkgRepo(pr *PullRequest) *SoftwarePkgRepo {
+	return &SoftwarePkgRepo{
+		Pkg: pr.Pkg,
+	}
+}
+
+func (s *SoftwarePkgRepo) Message() ([]byte, error) {
+	return json.Marshal(s)
 }

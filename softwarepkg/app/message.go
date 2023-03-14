@@ -1,8 +1,10 @@
 package app
 
 import (
+	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/pullrequest"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/repository"
+	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/infrastructure/watchingimpl"
 )
 
 type MessageService interface {
@@ -14,6 +16,7 @@ type MessageService interface {
 type messageService struct {
 	repo  repository.PullRequest
 	prCli pullrequest.PullRequest
+	watch watchingimpl.WatchingImpl
 }
 
 func (s *messageService) CreatePR(cmd *CmdToCreatePR) error {
@@ -35,9 +38,8 @@ func (s *messageService) MergePR(cmd *CmdToMergePR) error {
 		return err
 	}
 
-	//TODO monitor create repo
-
-	return nil
+	v := domain.ToSoftwarePkgRepo(&pr)
+	return s.watch.Apply(v)
 }
 
 func (s *messageService) ClosePR(cmd *CmdToClosePR) error {
