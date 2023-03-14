@@ -35,8 +35,8 @@ func (s *pullRequestService) HandleCI(cmd *CmdToHandleCI) error {
 }
 
 func (s *pullRequestService) HandleRepoCreated(pr *domain.PullRequest, url string) error {
-	repo := domain.ToSoftwarePkgRepo(pr, url)
-	if err := s.producer.NotifyRepoCreatedResult(repo); err != nil {
+	e := domain.NewRepoCreatedEvent(pr, url)
+	if err := s.producer.NotifyRepoCreatedResult(&e); err != nil {
 		return err
 	}
 

@@ -23,3 +23,21 @@ func NewPRCIFinishedEvent(pr *PullRequest, failedReason string) prCIFinishedEven
 		Success:      failedReason == "",
 	}
 }
+
+type repoCreatedEvent struct {
+	PkgId   string `json:"pkg_id"`
+	PkgName string `json:"pkg_name"`
+	RepoURL string `json:"repo_url"`
+}
+
+func (e *repoCreatedEvent) Message() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+func NewRepoCreatedEvent(pr *PullRequest, url string) repoCreatedEvent {
+	return repoCreatedEvent{
+		PkgId:   pr.Pkg.Id,
+		PkgName: pr.Pkg.Name,
+		RepoURL: url,
+	}
+}

@@ -1,7 +1,5 @@
 package domain
 
-import "encoding/json"
-
 type SoftwarePkgSourceCode struct {
 	Address string
 	License string
@@ -48,15 +46,4 @@ func (r *PullRequest) IsMerged() bool {
 type SoftwarePkgRepo struct {
 	Pkg     SoftwarePkgBasic
 	RepoURL string
-}
-
-func ToSoftwarePkgRepo(pr *PullRequest, url string) *SoftwarePkgRepo {
-	return &SoftwarePkgRepo{
-		Pkg:     pr.Pkg,
-		RepoURL: url,
-	}
-}
-
-func (s *SoftwarePkgRepo) Message() ([]byte, error) {
-	return json.Marshal(s)
 }
