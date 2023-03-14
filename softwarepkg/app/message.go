@@ -1,22 +1,19 @@
 package app
 
 import (
-	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/pullrequest"
 	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/domain/repository"
-	"github.com/opensourceways/robot-gitee-software-package/softwarepkg/infrastructure/watchingimpl"
 )
 
 type MessageService interface {
-	CreatePR(cmd *CmdToCreatePR) error
-	MergePR(cmd *CmdToMergePR) error
-	ClosePR(cmd *CmdToClosePR) error
+	CreatePR(*CmdToCreatePR) error
+	MergePR(*CmdToMergePR) error
+	ClosePR(*CmdToClosePR) error
 }
 
 type messageService struct {
 	repo  repository.PullRequest
 	prCli pullrequest.PullRequest
-	watch watchingimpl.WatchingImpl
 }
 
 func (s *messageService) CreatePR(cmd *CmdToCreatePR) error {
@@ -38,8 +35,9 @@ func (s *messageService) MergePR(cmd *CmdToMergePR) error {
 		return err
 	}
 
-	v := domain.ToSoftwarePkgRepo(&pr)
-	return s.watch.Apply(v)
+	pr.SetMerged()
+
+	return s.repo.Save(&pr)
 }
 
 func (s *messageService) ClosePR(cmd *CmdToClosePR) error {

@@ -30,9 +30,18 @@ type SoftwarePkg struct {
 
 // PullRequest
 type PullRequest struct {
-	Num  int
-	Link string
-	Pkg  SoftwarePkgBasic
+	Num    int
+	Link   string
+	Merged bool
+	Pkg    SoftwarePkgBasic
+}
+
+func (r *PullRequest) SetMerged() {
+	r.Merged = true
+}
+
+func (r *PullRequest) IsMerged() bool {
+	return r.Merged
 }
 
 // SoftwarePkgRepo
@@ -41,9 +50,10 @@ type SoftwarePkgRepo struct {
 	RepoURL string
 }
 
-func ToSoftwarePkgRepo(pr *PullRequest) *SoftwarePkgRepo {
+func ToSoftwarePkgRepo(pr *PullRequest, url string) *SoftwarePkgRepo {
 	return &SoftwarePkgRepo{
-		Pkg: pr.Pkg,
+		Pkg:     pr.Pkg,
+		RepoURL: url,
 	}
 }
 
